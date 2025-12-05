@@ -1,4 +1,4 @@
-import { Pool, QueryResult } from 'pg';
+import { Pool, QueryResult, QueryResultRow } from 'pg';
 
 type DbConfig = {
   host: string;
@@ -40,7 +40,7 @@ const loadConfig = (): DbConfig => {
 
 const pool = new Pool(loadConfig());
 
-const query = async <T>(
+const query = async <T extends QueryResultRow = QueryResultRow>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> => pool.query<T>(text, params);

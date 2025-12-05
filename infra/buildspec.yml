@@ -1,0 +1,27 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - ECR_REGISTRY="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+  build:
+    commands:
+      - echo "Building backend image..."
+      - docker build -t blog-backend:latest ./backend
+      - echo "Building frontend image..."
+      - docker build -t blog-frontend:latest ./frontend
+  post_build:
+    commands:
+      - echo "Tagging and pushing backend image..."
+      - docker tag blog-backend:latest $ECR_REGISTRY/blog-backend:latest
+      - docker push $ECR_REGISTRY/blog-backend:latest
+      - echo "Tagging and pushing frontend image..."
+      - docker tag blog-frontend:latest $ECR_REGISTRY/blog-frontend:latest
+      - docker push $ECR_REGISTRY/blog-frontend:latest
+
+artifacts:
+  files:
+    - infra/**/*

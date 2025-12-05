@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: auto-blog-db
+    environment:
+      POSTGRES_USER: blog
+      POSTGRES_PASSWORD: blog
+      POSTGRES_DB: blog
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ../backend
+    container_name: auto-blog-backend
+    depends_on:
+      - db
+    environment:
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: blog
+      DB_PASSWORD: blog
+      DB_NAME: blog
+      AI_PROVIDER: huggingface
+      HF_API_KEY: ${HF_API_KEY:-}
+      HF_MODEL: ${HF_MODEL:-mistralai/Mistral-7B-Instruct-v0.3}
+    ports:
+      - '4000:4000'
+
+  frontend:
+    build: ../frontend
+    container_name: auto-blog-frontend
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - '3000:3000'
+
+volumes:
+  db_data:
