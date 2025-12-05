@@ -2,6 +2,8 @@
 set -euo pipefail
 
 AWS_REGION="${AWS_REGION:-us-east-1}"
+COMPOSE_FILE_URL="${COMPOSE_FILE_URL:-}"
+DEPLOY_SCRIPT_URL="${DEPLOY_SCRIPT_URL:-}"
 
 echo "[Init] Updating packages..."
 sudo apt-get update -y
@@ -30,9 +32,19 @@ APP_DIR=/opt/auto-blog
 sudo mkdir -p "$APP_DIR"
 sudo chown "$USER":"$USER" "$APP_DIR"
 
+if [[ -z "$COMPOSE_FILE_URL" ]]; then
+  echo "Set COMPOSE_FILE_URL to the raw GitHub URL of infra/docker-compose.prod.yml"
+  exit 1
+fi
+
 echo "[Init] Downloading docker-compose.prod.yml..."
-# TODO: Replace the URL below with the raw GitHub URL of your docker-compose.prod.yml
-curl -fsSL "<GITHUB_RAW_URL>/infra/docker-compose.prod.yml" -o "$APP_DIR/docker-compose.prod.yml"
+curl -fsSL "$COMPOSE_FILE_URL" -o "$APP_DIR/docker-compose.prod.yml"
+
+if [[ -n "$DEPLOY_SCRIPT_URL" ]]; then
+  echo "[Init] Downloading deploy.sh..."
+  curl -fsSL "$DEPLOY_SCRIPT_URL" -o "$APP_DIR/deploy.sh"
+  chmod +x "$APP_DIR/deploy.sh"
+fi
 
 cat <<'INSTRUCTIONS'
 
@@ -40,7 +52,8 @@ Initialization complete.
 
 Next steps on the EC2 instance:
 1. Create or copy your prod.env into /opt/auto-blog/prod.env with DB credentials and AI keys.
-2. (Optional) Download the latest deploy.sh script into /opt/auto-blog/.
+   - See infra/prod.env.example in the repo for required keys.
+2. (Optional) Download the latest deploy.sh script into /opt/auto-blog/ (set DEPLOY_SCRIPT_URL before running this script).
 3. Run:
      cd /opt/auto-blog
      AWS_REGION=<your-region> ./deploy.sh

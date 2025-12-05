@@ -31,9 +31,14 @@ This challenge implements a small monorepo where a React + TypeScript frontend c
 - **IAM Roles & Secrets Manager**: Securely stores environment variables, database credentials, and AI API keys.
 
 ## Environment Variables
+Sample files:
+- `backend/.env.example` – Backend server + AI settings.
+- `frontend/.env.example` – Vite client pointing at the API.
+- `infra/prod.env.example` – Template for the EC2 compose stack (`prod.env`).
+
+Key values:
 - `PORT` / `FRONTEND_PORT`: Port bindings for backend and frontend dev servers.
-- `DATABASE_URL` or `PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE`: PostgreSQL connection string.
-- `HUGGING_FACE_API_URL`: Base URL for the chosen inference endpoint.
-- `HUGGING_FACE_API_KEY`: Token used to authenticate the article generation requests.
-- `CRON_GENERATE_SCHEDULE`: Cron expression controlling the automated generator.
-- `AWS_REGION`, `AWS_ACCOUNT_ID`, `ECR_REPOSITORY`: Used by build/deploy scripts for pushing Docker images.
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`: Postgres connectivity for backend + cron job.
+- `AI_PROVIDER`, `HF_API_KEY`, `HF_MODEL`: HuggingFace credentials.
+- `VITE_API_URL`: Frontend entrypoint to backend (`http://localhost:4000` in dev, EC2 DNS in prod).
+- `AWS_REGION`, `AWS_ACCOUNT_ID`, `ECR_REGISTRY`: Used by build/deploy scripts for pushing Docker images.
